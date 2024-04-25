@@ -1,0 +1,5 @@
+config BR2_PACKAGE_UBOOT_ENV
+	bool "uboot-env"
+	select BR2_PACKAGE_UBOOT
+	help
+	  uboot-env

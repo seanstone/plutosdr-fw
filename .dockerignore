@@ -3,9 +3,6 @@
 /Xilinx/
 /Xilinx.img
 *.bin
-.DS_Store
-*.crdownload
-*.jou
-*.log
-*.str
-*.zst
+/.git/
+/buildroot/
+/hdl/

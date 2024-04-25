@@ -1,0 +1,24 @@
+config BR2_PACKAGE_HDL
+	bool "hdl"
+  select BR2_PACKAGE_HOST_DEVICE_TREE_XLNX
+	select BR2_PACKAGE_UBOOT
+	help
+	  Analog Devices HDL libraries and projects
+
+config HDL_VIVADO_PATH
+    string "Path to Vivado"
+    default "/tools/Xilinx/Vivado/2023.2"
+    help
+      Path to Vivado
+
+config HDL_VITIS_PATH
+    string "Path to Vivado"
+    default "/tools/Xilinx/Vitis/2023.2"
+    help
+      Path to Vitis
+
+config HDL_PROJECTS
+    string "HDL projects"
+    default "pluto"
+    help
+      List of HDL projects
