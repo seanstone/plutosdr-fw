@@ -56,17 +56,13 @@ Makefile:
 ################################### Patches ####################################
 
 .PHONY: patch
-patch: patch-br patch-hdl
+patch: patch-br
 
 .PHONY: patch-br
 patch-br:
 	for patch in patches/buildroot/*.patch; do \
 		patch -d buildroot -p1 --forward < $$patch || true; \
 	done
-
-.PHONY: patch-hdl
-patch-hdl:
-	patch -d hdl -p1 --forward < hdl.patch || true
 
 else
 
