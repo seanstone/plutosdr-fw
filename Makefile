@@ -112,8 +112,6 @@ $(O)/.config:
 include $(BR2_DEFCONFIG)
 HDL_PROJECT := $(patsubst "%",%,$(HDL_PROJECT))
 
-all: xilinx_axidma-reinstall
-
 export UBOOT_DIR = $(strip $(O)/build/uboot-$(BR2_TARGET_UBOOT_CUSTOM_REPO_VERSION))
 
 ## Pass targets to buildroot
@@ -171,59 +169,6 @@ export BUSYBOX_DIR = $(strip $(O)/build/busybox-$(BUSYBOX_VERSION))
 busybox-diffconfig: $(BR2_PACKAGE_BUSYBOX_CONFIG)
 	$(LINUX_DIR)/scripts/diffconfig -m $< $(BUSYBOX_DIR)/.config > $(BR2_PACKAGE_BUSYBOX_CONFIG_FRAGMENT_FILES)
 
-###################################### HDL #####################################
-
-.PHONY: hdl
-hdl: $(O)/sdk/hw_0/hw/system_top.bit
-
-.PHONY: fsbl
-fsbl: $(O)/sdk/fsbl/Release/fsbl.elf
-
-$(O)/sdk/fsbl/Release/fsbl.elf $(O)/sdk/hw_0/hw/system_top.bit: $(O)/hdl/$(HDL_PROJECT).sdk/system_top.xsa
-	mkdir -p $(O)
-	source $(VIVADO_SETTINGS) && \
-	LD_PRELOAD="/lib/x86_64-linux-gnu/libudev.so.1 /lib/x86_64-linux-gnu/libselinux.so.1 /lib/x86_64-linux-gnu/libz.so.1 /lib/x86_64-linux-gnu/libpcre2-8.so.0" \
-	JAVA_TOOL_OPTIONS="-Dsun.java2d.xrender=false" \
-	JAVA_OPTS="-Dsun.java2d.xrender=false" \
-	DISPLAY="host.docker.internal:0" \
-	cd $(O) && xsct $(CURDIR)/platform/create_fsbl_project.tcl
-
-.PHONY: xsa
-xsa: $(O)/hdl/$(HDL_PROJECT).sdk/system_top.xsa
-
-export ADI_HDL_DIR=$(CURDIR)/hdl
-export ADI_IGNORE_VERSION_CHECK=1
-
-$(O)/hdl/$(HDL_PROJECT).sdk/system_top.xsa: $(CURDIR)/targets/$(TARGET)/hdl/system_bd.tcl
-	mkdir -p $(O)/hdl
-	cp $(CURDIR)/targets/$(TARGET)/hdl/*.tcl $(O)/hdl/
-	source $(VIVADO_SETTINGS) && \
-		LD_PRELOAD="/lib/x86_64-linux-gnu/libudev.so.1 /lib/x86_64-linux-gnu/libselinux.so.1 /lib/x86_64-linux-gnu/libz.so.1 /lib/x86_64-linux-gnu/libpcre2-8.so.0" \
-		JAVA_TOOL_OPTIONS="-Dsun.java2d.xrender=false" \
-		JAVA_OPTS="-Dsun.java2d.xrender=false" \
-		DISPLAY="host.docker.internal:0" \
-		VPATH=$(HDL_PROJECT_DIR) $(MAKE) -I $(HDL_PROJECT_DIR) \
-		-C $(O)/hdl -f $(CURDIR)/targets/$(TARGET)/hdl/Makefile
-
-.PHONY: $(wildcard ip/*)
-$(wildcard ip/*):
-	mkdir -p $(CURDIR)/build/$@
-	cp $@/* $(CURDIR)/build/$@
-	source $(VIVADO_SETTINGS) && \
-		LD_PRELOAD="/lib/x86_64-linux-gnu/libudev.so.1 /lib/x86_64-linux-gnu/libselinux.so.1 /lib/x86_64-linux-gnu/libz.so.1 /lib/x86_64-linux-gnu/libpcre2-8.so.0" \
-		JAVA_TOOL_OPTIONS="-Dsun.java2d.xrender=false" \
-		JAVA_OPTS="-Dsun.java2d.xrender=false" \
-		DISPLAY="host.docker.internal:0" \
-		VPATH="$(CURDIR)/$@ $(ADI_HDL_DIR)" $(MAKE) -I $(ADI_HDL_DIR) \
-		-C $(CURDIR)/build/$@ -f $(CURDIR)/$@/Makefile
-
-export
-
-##################################### DTS ######################################
-
-.PHONY: clean-dts
-#dts: $(O)/hdl/$(HDL_PROJECT).sdk/system_top.xsa
-
 #################################### Images ####################################
 
 .PHONY: boot.bin
@@ -241,40 +186,14 @@ endif
 $(O)/images/boot.bin: $(O)/images/boot.bif
 	source $(VIVADO_SETTINGS) && bootgen -image $< -w -o $@
 
-################################ Programming PL #################################
-
-$(O)/images/system_top.bif: $(O)/hdl/$(TARGET).runs/impl_1/system_top.bit
-	echo all:{$<} > $@
-
-$(O)/images/system_top.bit.bin: $(O)/images/system_top.bif
-	source $(VIVADO_SETTINGS) && bootgen -image $< -w -o $@
-
-SSH_KEY = $(CURDIR)/platform/rootfs_overlay/root/.ssh/id_rsa
-
-.PHONY: bit pl
-bit: $(O)/images/system_top.bit.bin
-
-pl: $(O)/images/system_top.bit.bin
-	rsync -avzz -e "ssh -i $(SSH_KEY)" --chown=root:root $< root@$(TARGET).local:/lib/firmware
-	ssh -i $(SSH_KEY) root@$(TARGET).local "echo system_top.bit.bin > /sys/class/fpga_manager/fpga0/firmware"
-
 #################################### Clean #####################################
 
-.PHONY: clean-all clean-sdk clean-hdl clean-hdllib clean-target
+.PHONY: clean-all clean-target
 
-clean-all: clean-sdk clean-hdl clean-hdllib clean clean-ip
-
-clean-sdk:
-	rm -rf $(O)/sdk
-
-clean-hdl: clean-sdk
-	rm -rf $(O)/hdl
+clean-all: clean clean-ip
 
 clean-ip:
 	rm -rf build/ip
-
-clean-hdllib:
-	$(MAKE) -C hdl clean-all
 
 clean-target:
 	rm -rf $(O)/target
@@ -282,9 +201,6 @@ clean-target:
 
 clean-images:
 	rm -f $(O)/images/*
-
-clean-dts:
-	rm -rf $(O)/dts
 
 ##################################### DFU ######################################
 
