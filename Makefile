@@ -185,7 +185,12 @@ fsbl: $(O)/sdk/fsbl/Release/fsbl.elf
 
 $(O)/sdk/fsbl/Release/fsbl.elf $(O)/sdk/hw_0/hw/system_top.bit: $(O)/hdl/$(HDL_PROJECT).sdk/system_top.xsa
 	mkdir -p $(O)
-	source $(VIVADO_SETTINGS) && cd $(O) && xsct $(CURDIR)/platform/create_fsbl_project.tcl
+	source $(VIVADO_SETTINGS) && \
+	LD_PRELOAD="/lib/x86_64-linux-gnu/libudev.so.1 /lib/x86_64-linux-gnu/libselinux.so.1 /lib/x86_64-linux-gnu/libz.so.1 /lib/x86_64-linux-gnu/libpcre2-8.so.0" \
+	JAVA_TOOL_OPTIONS="-Dsun.java2d.xrender=false" \
+	JAVA_OPTS="-Dsun.java2d.xrender=false" \
+	DISPLAY="host.docker.internal:0" \
+	cd $(O) && xsct $(CURDIR)/platform/create_fsbl_project.tcl
 
 .PHONY: xsa
 xsa: $(O)/hdl/$(HDL_PROJECT).sdk/system_top.xsa
@@ -197,6 +202,10 @@ $(O)/hdl/$(HDL_PROJECT).sdk/system_top.xsa: $(CURDIR)/targets/$(TARGET)/hdl/syst
 	mkdir -p $(O)/hdl
 	cp $(CURDIR)/targets/$(TARGET)/hdl/*.tcl $(O)/hdl/
 	source $(VIVADO_SETTINGS) && \
+		LD_PRELOAD="/lib/x86_64-linux-gnu/libudev.so.1 /lib/x86_64-linux-gnu/libselinux.so.1 /lib/x86_64-linux-gnu/libz.so.1 /lib/x86_64-linux-gnu/libpcre2-8.so.0" \
+		JAVA_TOOL_OPTIONS="-Dsun.java2d.xrender=false" \
+		JAVA_OPTS="-Dsun.java2d.xrender=false" \
+		DISPLAY="host.docker.internal:0" \
 		$(MAKE) VPATH=$(HDL_PROJECT_DIR) -I $(HDL_PROJECT_DIR) \
 		-C $(O)/hdl -f $(CURDIR)/targets/$(TARGET)/hdl/Makefile
 
@@ -205,6 +214,10 @@ $(wildcard ip/*):
 	mkdir -p $(CURDIR)/build/$@
 	cp $@/* $(CURDIR)/build/$@
 	source $(VIVADO_SETTINGS) && \
+		LD_PRELOAD="/lib/x86_64-linux-gnu/libudev.so.1 /lib/x86_64-linux-gnu/libselinux.so.1 /lib/x86_64-linux-gnu/libz.so.1 /lib/x86_64-linux-gnu/libpcre2-8.so.0" \
+		JAVA_TOOL_OPTIONS="-Dsun.java2d.xrender=false" \
+		JAVA_OPTS="-Dsun.java2d.xrender=false" \
+		DISPLAY="host.docker.internal:0" \
 		$(MAKE) VPATH="$(CURDIR)/$@ $(ADI_HDL_DIR)" -I $(ADI_HDL_DIR) \
 		-C $(CURDIR)/build/$@ -f $(CURDIR)/$@/Makefile
 
