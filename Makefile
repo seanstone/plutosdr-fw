@@ -11,11 +11,11 @@ DOCKER_ARGS = \
 		-e DISPLAY=host.docker.internal:0 \
 		-v .:/home/user/plutosdr-fw \
 		-v ./.ssh:/home/user/.ssh \
-		-v ./build/images:/home/user/images \
+		-v ./build/pluto/images:/home/user/images \
 		-v /tmp/.X11-unix:/tmp/.X11-unix \
 		--platform linux/amd64 plutosdr-build
 
-DOCKER_INIT_CMDS = cd /home/user/plutosdr-fw && sudo mount -o loop build.img build && sudo chown user:users build && mkdir -p build/images && sudo mount --bind /home/user/images build/images && sudo mount -o loop Xilinx.img /tools/Xilinx
+DOCKER_INIT_CMDS = cd /home/user/plutosdr-fw && sudo mount -o loop build.img build && sudo chown user:users build && mkdir -p build/pluto/images && sudo mount --bind /home/user/images build/pluto/images && sudo mount -o loop Xilinx.img /tools/Xilinx
 
 .PHONY: docker
 docker:
@@ -34,19 +34,19 @@ Xilinx.img:
 
 .PHONY: bash
 bash:
-	mkdir -p build/images
+	mkdir -p build/pluto/images
 	docker run $(DOCKER_ARGS) \
 		sudo -H -u user bash -c "$(DOCKER_INIT_CMDS) && bash"
 
 .PHONY: vivado
 vivado:
 	xhost +
-	mkdir -p build/images
+	mkdir -p build/pluto/images
 	docker run $(DOCKER_ARGS) \
 		sudo -H -u user bash -c "$(DOCKER_INIT_CMDS) && ./scripts/start_vivado.sh"
 
 %: build.img
-	mkdir -p build/images
+	mkdir -p build/pluto/images
 	docker run $(DOCKER_ARGS) \
 		sudo -H -u user bash -c "$(DOCKER_INIT_CMDS) && make $*"
 
@@ -198,5 +198,5 @@ upload:
 	sudo eject /run/media/$$USER/PlutoSDR
 
 .PHONY: dfu
-dfu: build/images/pluto.dfu
+dfu: build/pluto/images/pluto.dfu
 	sudo dfu-util -D $< -a firmware.dfu
