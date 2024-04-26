@@ -1,0 +1,36 @@
+#!/bin/sh
+# Server-side demuxing by default
+
+LIGHTBLUE="\e[38;5;87m"
+LIGHTGREEN="\e[38;5;46m"
+LIGHTRED="\e[38;5;196m"
+NORMAL="\e[0m"
+OK="${LIGHTGREEN}OK${NORMAL}"
+FAIL="${LIGHTRED}FAIL${NORMAL}"
+HEADER="${LIGHTBLUE}[S41 udhcpd]${NORMAL}\t"
+
+source /etc/device_config
+
+case "$1" in
+	start)
+		echo -ne "${HEADER}Starting dhcpd Daemon..." > /dev/kmsg
+		start-stop-daemon -S -b -q -m -p /var/run/udhcpd.pid -x /usr/sbin/udhcpd -- $UDHCPD_CONF
+		[ $? = 0 ] && echo -e "${HEADER}started ${OK}" > /dev/kmsg || echo -e "${HEADER}start ${FAIL}" > /dev/kmsg
+		;;
+
+	stop)
+		echo -ne "${HEADER}Stopping dhcpd Daemon..." > /dev/kmsg
+		start-stop-daemon -K -q -p /var/run/udhcpd.pid 2>/dev/null
+		[ $? = 0 ] && echo -e "${HEADER}stopped ${OK}" > /dev/kmsg || echo -e "${HEADER}stop ${FAIL}" > /dev/kmsg
+		;;
+
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+
+	*)
+		echo "Usage: $0 {start|stop|restart}"
+		exit 1
+esac

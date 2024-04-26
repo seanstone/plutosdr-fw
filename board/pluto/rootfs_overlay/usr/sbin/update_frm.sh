@@ -27,7 +27,8 @@ handle_frimware_frm () {
 	then
 		flash_indication_on
 		grep -q "${MAGIC}" /opt/firmware.frm && dd if=/opt/firmware.frm of=/dev/mtdblock3 bs=64k && fw_setenv fit_size ${FRM_SIZE} && echo "Done" || echo "Failed"
-		flash_indication_off
+		flash_erase -j /dev/mtd4 0 0
+        flash_indication_off
 		rm -f /opt/firmware.frm
 		sync
 		exit 0
