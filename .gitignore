@@ -50,3 +50,7 @@ VERSIONS
 
 *.prj/
 
+.DS_Store
+/build.img
+/Xilinx.img
+/scripts/*.bin
