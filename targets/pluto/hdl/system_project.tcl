@@ -1,7 +1,7 @@
 
 set ad_hdl_dir [file normalize $::env(ADI_HDL_DIR)]
 
-source -notrace $ad_hdl_dir/projects/scripts/adi_env.tcl
+source -notrace $ad_hdl_dir/scripts/adi_env.tcl
 source -notrace $ad_hdl_dir/projects/scripts/adi_project_xilinx.tcl
 source -notrace $ad_hdl_dir/projects/scripts/adi_board.tcl
 

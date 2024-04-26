@@ -202,7 +202,7 @@ $(O)/hdl/$(HDL_PROJECT).sdk/system_top.xsa: $(CURDIR)/targets/$(TARGET)/hdl/syst
 		JAVA_TOOL_OPTIONS="-Dsun.java2d.xrender=false" \
 		JAVA_OPTS="-Dsun.java2d.xrender=false" \
 		DISPLAY="host.docker.internal:0" \
-		$(MAKE) VPATH=$(HDL_PROJECT_DIR) -I $(HDL_PROJECT_DIR) \
+		VPATH=$(HDL_PROJECT_DIR) $(MAKE) -I $(HDL_PROJECT_DIR) \
 		-C $(O)/hdl -f $(CURDIR)/targets/$(TARGET)/hdl/Makefile
 
 .PHONY: $(wildcard ip/*)
@@ -214,7 +214,7 @@ $(wildcard ip/*):
 		JAVA_TOOL_OPTIONS="-Dsun.java2d.xrender=false" \
 		JAVA_OPTS="-Dsun.java2d.xrender=false" \
 		DISPLAY="host.docker.internal:0" \
-		$(MAKE) VPATH="$(CURDIR)/$@ $(ADI_HDL_DIR)" -I $(ADI_HDL_DIR) \
+		VPATH="$(CURDIR)/$@ $(ADI_HDL_DIR)" $(MAKE) -I $(ADI_HDL_DIR) \
 		-C $(CURDIR)/build/$@ -f $(CURDIR)/$@/Makefile
 
 export
