@@ -302,33 +302,13 @@ dfu-ram: $(O)/images/$(TARGET).dfu
 
 ################################################################################
 
+endif
+
 .PHONY: upload
 upload:
 	cp $(O)/images/$(TARGET).frm /run/media/*/PlutoSDR/
 	cp $(O)/images/boot.frm /run/media/*/PlutoSDR/
 	sudo eject /run/media/$$USER/PlutoSDR
-
-.PHONY: flash-%
-flash-%: $(O)/images/sdcard.img
-	@if lsblk -do name,tran | grep -E 'usb|mmcblk' | grep $*; then \
-		(umount /dev/$*1 || true) && \
-		(umount /dev/$*2 || true) && \
-		dd if=$< of=/dev/$* bs=4k status=progress && \
-		sync; \
-		platform/expand-rootfs.sh /dev/$*; \
-		partprobe; \
-		resize2fs /dev/$*p2; \
-		sync; partprobe; \
-	else echo "Invalid device"; \
-	fi
-
-.PHONY: sync
-sync:
-	scp build/adrv9364/build/SISO/bin/* adrv:/usr/bin/
-
-###############################################################################
-
-endif
 
 .PHONY: dfu
 dfu: build/images/pluto.dfu
