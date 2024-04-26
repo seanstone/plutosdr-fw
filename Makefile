@@ -99,7 +99,6 @@ export BR2_EXTERNAL=$(CURDIR)
 export BR2_DEFCONFIG=$(CURDIR)/targets/$(TARGET)/defconfig
 export O=$(CURDIR)/build/$(TARGET)
 
-CROSS_COMPILE ?= arm-buildroot-linux-gnueabihf-
 export PATH := $(PATH):$(O)/../host/bin/
 
 all menuconfig: $(O)/.config
@@ -120,26 +119,6 @@ export UBOOT_DIR = $(strip $(O)/build/uboot-$(BR2_TARGET_UBOOT_CUSTOM_REPO_VERSI
     	$(MAKE) TARGET=$(TARGET) UBOOT_DIR=$(UBOOT_DIR) BR2_EXTERNAL=$(BR2_EXTERNAL) BR2_DEFCONFIG=$(BR2_DEFCONFIG) O=$(O) -C buildroot $*
 
 ################################### U-Boot #####################################
-
-$(O)/images/u-boot.elf:
-	$(MAKE) uboot-reconfigure
-	mv $(O)/images/u-boot $@
-
-.PHONY: uboot-env.bin uboot-env.txt
-
-uboot-env.bin: $(O)/images/uboot-env.bin
-
-uboot-env.txt: $(O)/images/uboot-env.txt
-
-$(O)/images/uboot-env.bin: $(O)/images/uboot-env.txt
-	$(UBOOT_DIR)/tools/mkenvimage -s 0x20000 -o $@ $<
-
-$(O)/images/uboot-env.txt:
-	mkdir -p $(@D)
-	cd $(@D) && PATH=$(CURDIR)/build/host/bin/:$(PATH) CROSS_COMPILE=$(CROSS_COMPILE) $(CURDIR)/platform/get_default_envs.sh > $@
-	echo attr_name=compatible >> $@
-	echo attr_val=ad9364 >> $@
-	sed -i 's,^\(maxcpus[ ]*=\).*,\1'2',g' $@
 
 ## Generate reference defconfig with missing options set to default as a base for comparison using diffconfig
 $(UBOOT_DIR)/.$(BR2_TARGET_UBOOT_BOARD_DEFCONFIG)_defconfig:
@@ -168,23 +147,6 @@ export BUSYBOX_DIR = $(strip $(O)/build/busybox-$(BUSYBOX_VERSION))
 
 busybox-diffconfig: $(BR2_PACKAGE_BUSYBOX_CONFIG)
 	$(LINUX_DIR)/scripts/diffconfig -m $< $(BUSYBOX_DIR)/.config > $(BR2_PACKAGE_BUSYBOX_CONFIG_FRAGMENT_FILES)
-
-#################################### Images ####################################
-
-.PHONY: boot.bin
-boot.bin: $(O)/images/boot.bin
-
-all: $(O)/images/boot.bin
-
-ifdef FSBL_LOAD_BITSTREAM
-$(O)/images/boot.bif: $(O)/sdk/fsbl/Release/fsbl.elf $(O)/sdk/hw_0/hw/system_top.bit $(O)/images/u-boot.elf
-else
-$(O)/images/boot.bif: $(O)/sdk/fsbl/Release/fsbl.elf $(O)/images/u-boot.elf
-endif
-	echo img:{[bootloader] $^ } > $@
-
-$(O)/images/boot.bin: $(O)/images/boot.bif
-	source $(VIVADO_SETTINGS) && bootgen -image $< -w -o $@
 
 #################################### Clean #####################################
 
