@@ -1,6 +1,6 @@
 export SHELL:=/bin/bash
 
-export VIVADO_VERSION ?= 2021.2
+export VIVADO_VERSION ?= 2023.2
 export VIVADO_SETTINGS ?= /tools/Xilinx/Vivado/$(VIVADO_VERSION)/settings64.sh
 
 ifdef TARGET

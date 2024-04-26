@@ -2,13 +2,13 @@ comment "HDL"
 
 config VIVADO_VERSION
     string "Vivado version"
-    default "2019.1"
+    default "2023.2"
     help
       Vivado version
 
 config VIVADO_SETTINGS
     string "Path to Vivado settings"
-    default "/opt/Xilinx/Vivado/$(VIVADO_VERSION)/settings64.sh"
+    default "/tools/Xilinx/Vivado/$(VIVADO_VERSION)/settings64.sh"
     help
       Path to Vivado settings
 
