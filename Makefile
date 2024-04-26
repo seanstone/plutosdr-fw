@@ -53,9 +53,24 @@ vivado:
 Makefile:
 	ls Makefile
 
+################################### Patches ####################################
+
+.PHONY: patch
+patch: patch-br patch-hdl
+
+.PHONY: patch-br
+patch-br:
+	for patch in patches/buildroot/*.patch; do \
+		patch -d buildroot -p1 --forward < $$patch || true; \
+	done
+
+.PHONY: patch-hdl
+patch-hdl:
+	patch -d hdl -p1 --forward < hdl.patch || true
+
 else
 
-################################## Buildroot ###################################
+################################## Docker ###################################
 
 export SHELL:=/bin/bash
 
@@ -81,21 +96,6 @@ default: all
 
 # Include target specific settings
 include targets/$(TARGET)/$(TARGET).mk
-
-################################### Patches ####################################
-
-.PHONY: patch
-patch: patch-br patch-hdl
-
-.PHONY: patch-br
-patch-br:
-	for patch in patches/buildroot/*.patch; do \
-		patch -d buildroot -p1 --forward < $$patch || true; \
-	done
-
-.PHONY: patch-hdl
-patch-hdl:
-	patch -d hdl -p1 --forward < hdl.patch || true
 
 ################################## Buildroot ###################################
 
