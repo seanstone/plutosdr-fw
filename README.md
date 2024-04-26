@@ -92,19 +92,3 @@ Power off completely then power on.
 ## [Set sample rate](https://wiki.analog.com/resources/tools-software/linux-drivers/iio-transceiver/ad9361#settingquerying_the_tx_sample_rate)
 
 > out_voltage_sampling_frequency as well as in_voltage_sampling_frequency are not entirely independent, by default the both need to match unless adi,fdd-rx-rate-2tx-enable is set.
-
-## Troubleshooting
-
-* Make sure the daughterboard is tightly connected to the breakout board
-
-## To do
-
-* Time sync
-* Separate toolchain
-* Update hdl
-* Package for hdl
-* Package for Pluto specific stuff
-* Fix for TX buffer clean
-* Network / Mass storage settings
-* Customize MOTD
-* LED for ADRV9364
