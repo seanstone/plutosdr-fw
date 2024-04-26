@@ -2,10 +2,10 @@
 	path = buildroot
 	url = https://github.com/buildroot/buildroot.git
 	branch = master
-	ignore = all
+	ignore = dirty
 [submodule "hdl"]
 	path = hdl
 	url = https://github.com/analogdevicesinc/hdl
 	branch = master
-	ignore = all
+	ignore = dirty
 
