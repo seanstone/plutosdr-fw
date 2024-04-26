@@ -1,0 +1,8 @@
+/build/
+/build.img
+/Xilinx/
+/Xilinx.img
+*.bin
+/.git/
+/buildroot/
+/hdl/

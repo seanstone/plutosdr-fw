@@ -1,3 +1,62 @@
+.PHONY: default
+default: all
+
+OS := $(shell uname -s)
+ifeq ($(OS),Darwin)
+
+############################# Docker #############################
+
+DOCKER_ARGS = \
+		--init --rm -it --privileged \
+		-e DISPLAY=host.docker.internal:0 \
+		-v .:/home/user/plutosdr-fw \
+		-v ./.ssh:/home/user/.ssh \
+		-v ./build/images:/home/user/images \
+		-v /tmp/.X11-unix:/tmp/.X11-unix \
+		--platform linux/amd64 plutosdr-build
+
+DOCKER_INIT_CMDS = cd /home/user/plutosdr-fw && sudo mount -o loop build.img build && sudo chown user:users build && mkdir -p build/images && sudo mount --bind /home/user/images build/images && sudo mount -o loop Xilinx.img /tools/Xilinx
+
+.PHONY: docker
+docker:
+	docker build -t plutosdr-build .
+
+build.img:
+	truncate -s 20G build.img
+	docker run  \
+		$(DOCKER_ARGS) \
+		sudo -H -u user bash -c "cd /home/user/plutosdr-fw && mkfs.ext4 build.img && chmod 600 .ssh/id_rsa"
+
+Xilinx.img:
+	truncate -s 120G Xilinx.img
+	docker run $(DOCKER_ARGS) \
+		sudo -H -u user bash -c "cd /home/user/plutosdr-fw && mkfs.ext4 Xilinx.img && sudo mkdir -p /tools/Xilinx && sudo mount -o loop Xilinx.img /tools/Xilinx && sudo chown user:users /tools/Xilinx && ./scripts/install.sh"
+
+.PHONY: bash
+bash:
+	mkdir -p build/images
+	docker run $(DOCKER_ARGS) \
+		sudo -H -u user bash -c "$(DOCKER_INIT_CMDS) && bash"
+
+.PHONY: vivado
+vivado:
+	xhost +
+	mkdir -p build/images
+	docker run $(DOCKER_ARGS) \
+		sudo -H -u user bash -c "$(DOCKER_INIT_CMDS) && ./scripts/start_vivado.sh"
+
+%: build.img
+	mkdir -p build/images
+	docker run $(DOCKER_ARGS) \
+		sudo -H -u user bash -c "$(DOCKER_INIT_CMDS) && make $*"
+
+Makefile:
+	ls Makefile
+
+else
+
+################################## Buildroot ###################################
+
 export SHELL:=/bin/bash
 
 export VIVADO_VERSION ?= 2023.2
@@ -267,11 +326,10 @@ flash-%: $(O)/images/sdcard.img
 sync:
 	scp build/adrv9364/build/SISO/bin/* adrv:/usr/bin/
 
-################################################################################
+###############################################################################
 
-.PHONY: docker docker-run
-docker:
-	docker build -t plutosdr-fw Docker
+endif
 
-docker-run:
-	docker run --hostname docker -v $(CURDIR):/home/user/plutosdr-fw -v /tools/Xilinx:/tools/Xilinx -v $(CURDIR)/../SISO:/home/user/SISO -i -t plutosdr-fw
+.PHONY: dfu
+dfu: build/images/pluto.dfu
+	sudo dfu-util -D $< -a firmware.dfu
