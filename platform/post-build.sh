@@ -25,3 +25,19 @@ rm -rf ${TARGET_DIR}/usr/lib/python3.8/site-packages/numpy/core/include/
 rm -rf ${TARGET_DIR}/usr/lib/python3.8/distutils/command/*.exe
 find ${TARGET_DIR}/usr/lib/python3.*/ -name 'tests' -exec rm -r '{}' +
 find ${TARGET_DIR}/usr/lib/python3.*/ -name '*.pyo' -exec rm -r '{}' +
+
+BOARD_DIR="$(dirname $0)/../targets/pluto"
+BOARD_NAME="$(basename ${BOARD_DIR})"
+GENIMAGE_CFG="${BOARD_DIR}/genimage-msd.cfg"
+GENIMAGE_TMP="${BUILD_DIR}/genimage.tmp"
+
+rm -rf "${GENIMAGE_TMP}"
+
+genimage                           \
+	--rootpath "${TARGET_DIR}"     \
+	--tmppath "${GENIMAGE_TMP}"    \
+	--inputpath "${BOARD_DIR}/msd"  \
+	--outputpath "${TARGET_DIR}/opt/" \
+	--config "${GENIMAGE_CFG}"
+
+rm -f ${TARGET_DIR}/opt/boot.vfat
